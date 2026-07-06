@@ -1,12 +1,12 @@
 "use client";
 
 import React from 'react';
-import { FileText, BookOpen, CheckCircle2, Library } from 'lucide-react';
+import { FileText, Database, CheckCircle2, UploadCloud } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
-  type: 'syllabus' | 'materials';
+  type: 'data' | 'config';
   fileName?: string;
   isLoaded?: boolean;
 }
@@ -21,12 +21,12 @@ const FileUpload = ({ onFileSelect, type, fileName, isLoaded }: FileUploadProps)
 
   const getIcon = () => {
     if (isLoaded) return <CheckCircle2 size={32} />;
-    return type === 'syllabus' ? <BookOpen size={32} /> : <Library size={32} />;
+    return type === 'data' ? <Database size={32} /> : <UploadCloud size={32} />;
   };
 
   const getTitle = () => {
     if (isLoaded) return fileName;
-    return type === 'syllabus' ? "Upload Syllabus" : "Upload Study Materials";
+    return type === 'data' ? "Upload Dataset (CSV/JSON)" : "Upload Configuration";
   };
 
   return (
@@ -38,6 +38,7 @@ const FileUpload = ({ onFileSelect, type, fileName, isLoaded }: FileUploadProps)
     )}>
       <input
         type="file"
+        accept={type === 'data' ? ".csv,.json" : "*"}
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         onChange={handleFileChange}
       />
@@ -56,8 +57,8 @@ const FileUpload = ({ onFileSelect, type, fileName, isLoaded }: FileUploadProps)
           </h3>
           <p className="text-sm text-slate-500 mt-1">
             {isLoaded 
-              ? "Content processed successfully" 
-              : `Drag and drop your ${type === 'syllabus' ? 'curriculum' : 'supporting documents'}`}
+              ? "File processed successfully" 
+              : `Drag and drop your ${type === 'data' ? 'data file' : 'settings'} here`}
           </p>
         </div>
       </div>
