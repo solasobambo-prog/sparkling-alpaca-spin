@@ -9,6 +9,8 @@ import ResourcesList from '@/components/ResourcesList';
 import { Button } from '@/components/ui/button';
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { toast } from "sonner";
 
 type ViewState = 'overview' | 'learning' | 'quiz' | 'resources';
 
@@ -30,6 +32,7 @@ const Index = () => {
   const handleSyllabusUpload = (file: File) => {
     setSyllabusName(file.name);
     setIsReady(true);
+    toast.success("Syllabus processed! Your course is ready.");
   };
 
   const handleLessonSelect = (id: string) => {
@@ -47,8 +50,8 @@ const Index = () => {
         return <ResourcesList onClose={() => setActiveView('overview')} />;
       case 'learning':
         return (
-          <div className="space-y-8">
-            <Button variant="ghost" onClick={() => setActiveView('overview')} className="gap-2 -ml-2 text-slate-500">
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <Button variant="ghost" onClick={() => setActiveView('overview')} className="gap-2 -ml-2 text-slate-500 hover:text-indigo-600">
               <ArrowLeft size={18} /> Back to Overview
             </Button>
             <div className="prose prose-slate max-w-none">
@@ -74,7 +77,7 @@ const Index = () => {
                 </div>
               </div>
               <div className="flex justify-between items-center pt-8 border-t border-slate-100">
-                <Button variant="outline">Previous Section</Button>
+                <Button variant="outline" onClick={() => toast.info("Previous section coming soon")}>Previous Section</Button>
                 <Button className="bg-indigo-600 hover:bg-indigo-700 px-8" onClick={() => setActiveView('quiz')}>
                   Take Module Quiz
                 </Button>
@@ -84,7 +87,7 @@ const Index = () => {
         );
       default:
         return (
-          <div className="space-y-8">
+          <div className="space-y-8 animate-in fade-in duration-500">
             <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-full uppercase tracking-widest border border-indigo-100">
@@ -133,7 +136,7 @@ const Index = () => {
                 >
                   Start Learning
                 </Button>
-                <Button variant="outline" className="h-12 px-8">
+                <Button variant="outline" className="h-12 px-8" onClick={() => toast.info("Study guide download starting...")}>
                   Download Study Guide
                 </Button>
               </div>
@@ -185,10 +188,10 @@ const Index = () => {
           >
             <LayoutDashboard size={20} /> Dashboard
           </Button>
-          <Button variant="ghost" className="w-full justify-start gap-3 text-slate-600 hover:bg-slate-50">
+          <Button variant="ghost" className="w-full justify-start gap-3 text-slate-600 hover:bg-slate-50" onClick={() => toast.info("My Courses feature coming soon")}>
             <BookOpen size={20} /> My Courses
           </Button>
-          <Button variant="ghost" className="w-full justify-start gap-3 text-slate-600 hover:bg-slate-50">
+          <Button variant="ghost" className="w-full justify-start gap-3 text-slate-600 hover:bg-slate-50" onClick={() => toast.info("Settings coming soon")}>
             <Settings size={20} /> Settings
           </Button>
         </nav>
@@ -197,7 +200,7 @@ const Index = () => {
           <Button 
             variant="ghost" 
             className="w-full justify-start gap-3 text-slate-400 hover:text-red-500"
-            onClick={() => navigate('/login')}
+            onClick={() => toast.info("Sign out successful")}
           >
             <LogOut size={20} /> Sign Out
           </Button>
@@ -224,7 +227,7 @@ const Index = () => {
 
         <div className="max-w-5xl mx-auto p-6 lg:p-10">
           {!isReady ? (
-            <div className="space-y-8">
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
               <div className="bg-gradient-to-r from-indigo-600 to-violet-700 rounded-3xl p-10 text-white relative overflow-hidden shadow-2xl shadow-indigo-200">
                 <div className="relative z-10 max-w-xl">
                   <h2 className="text-4xl font-bold mb-4">Turn any Syllabus into a Course</h2>
@@ -254,7 +257,7 @@ const Index = () => {
                 />
                 <FileUpload 
                   type="materials" 
-                  onFileSelect={() => {}}
+                  onFileSelect={() => toast.info("Materials upload coming soon")}
                   isLoaded={false}
                 />
               </div>
