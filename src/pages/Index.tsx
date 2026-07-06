@@ -1,67 +1,56 @@
 "use client";
 
 import React, { useState } from 'react';
-import Papa from 'papaparse';
-import { GraduationCap, BookOpen, LayoutDashboard, Settings, LogOut } from 'lucide-react';
+import { GraduationCap, BookOpen, LayoutDashboard, Settings, LogOut, Sparkles, ChevronRight } from 'lucide-react';
 import FileUpload from '@/components/FileUpload';
 import LearningPath from '@/components/LearningPath';
-import DataPreview from '@/components/DataPreview';
 import { Button } from '@/components/ui/button';
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
-  const [curriculum, setCurriculum] = useState<any>(null);
-  const [dataset, setDataset] = useState<any[]>([]);
-  const [columns, setColumns] = useState<string[]>([]);
-  const [datasetName, setDatasetName] = useState("");
-  const [curriculumName, setCurriculumName] = useState("");
+  const navigate = useNavigate();
+  const [syllabus, setSyllabus] = useState<boolean>(false);
+  const [materials, setMaterials] = useState<boolean>(false);
+  const [syllabusName, setSyllabusName] = useState("");
+  const [materialsName, setMaterialsName] = useState("");
   const [currentLessonId, setCurrentLessonId] = useState("1");
 
-  // Mock lessons based on a typical data analysis curriculum
+  // Mock dynamic lessons that would be generated from the syllabus
   const [lessons, setLessons] = useState([
-    { id: "1", title: "Introduction to Data Analysis", status: 'current' as const },
-    { id: "2", title: "Data Cleaning & Preprocessing", status: 'locked' as const },
-    { id: "3", title: "Exploratory Data Analysis (EDA)", status: 'locked' as const },
-    { id: "4", title: "Statistical Foundations", status: 'locked' as const },
-    { id: "5", title: "Data Visualization Techniques", status: 'locked' as const },
+    { id: "1", title: "Foundational Concepts", status: 'current' as const },
+    { id: "2", title: "Core Principles & Frameworks", status: 'locked' as const },
+    { id: "3", title: "Advanced Methodologies", status: 'locked' as const },
+    { id: "4", title: "Practical Applications", status: 'locked' as const },
+    { id: "5", title: "Final Assessment & Review", status: 'locked' as const },
   ]);
 
-  const handleCurriculumUpload = (file: File) => {
-    setCurriculumName(file.name);
-    // In a real app, we'd parse the curriculum text/PDF
-    // For now, we'll just unlock the first lesson
-    setCurriculum(true);
+  const handleSyllabusUpload = (file: File) => {
+    setSyllabusName(file.name);
+    setSyllabus(true);
   };
 
-  const handleDatasetUpload = (file: File) => {
-    setDatasetName(file.name);
-    Papa.parse(file, {
-      header: true,
-      complete: (results) => {
-        setDataset(results.data);
-        if (results.data.length > 0) {
-          setColumns(Object.keys(results.data[0]));
-        }
-      },
-    });
+  const handleMaterialsUpload = (file: File) => {
+    setMaterialsName(file.name);
+    setMaterials(true);
   };
 
   const handleLessonSelect = (id: string) => {
     setCurrentLessonId(id);
   };
 
-  const isReady = curriculum && dataset.length > 0;
+  const isReady = syllabus; // Syllabus is the minimum requirement
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex">
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-slate-200 hidden lg:flex flex-col p-6">
         <div className="flex items-center gap-3 mb-10">
-          <div className="bg-indigo-600 p-2 rounded-xl">
-            <GraduationCap className="text-white" size={24} />
+          <div className="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-200">
+            <Sparkles className="text-white" size={24} />
           </div>
-          <span className="font-bold text-xl text-slate-900 tracking-tight">DataTutor</span>
+          <span className="font-bold text-xl text-slate-900 tracking-tight">LMSGen AI</span>
         </div>
 
         <nav className="space-y-2 flex-1">
@@ -77,7 +66,11 @@ const Index = () => {
         </nav>
 
         <div className="pt-6 border-t border-slate-100">
-          <Button variant="ghost" className="w-full justify-start gap-3 text-slate-400 hover:text-red-500">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start gap-3 text-slate-400 hover:text-red-500"
+            onClick={() => navigate('/login')}
+          >
             <LogOut size={20} /> Sign Out
           </Button>
         </div>
@@ -85,18 +78,14 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
-        <header className="bg-white border-b border-slate-200 p-6 sticky top-0 z-20">
+        <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 p-6 sticky top-0 z-20">
           <div className="max-w-5xl mx-auto flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">Welcome back, Analyst!</h1>
-              <p className="text-slate-500">Ready to master your data today?</p>
+              <h1 className="text-2xl font-bold text-slate-900">Personalized Learning</h1>
+              <p className="text-slate-500">Your AI-generated curriculum is ready.</p>
             </div>
             <div className="flex items-center gap-4">
-              <div className="text-right hidden sm:block">
-                <div className="text-sm font-medium text-slate-900">Progress</div>
-                <div className="text-xs text-slate-500">20% Completed</div>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-indigo-100 border-2 border-white shadow-sm flex items-center justify-center text-indigo-600 font-bold">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 border-2 border-white shadow-sm flex items-center justify-center text-white font-bold">
                 JD
               </div>
             </div>
@@ -112,30 +101,38 @@ const Index = () => {
                 exit={{ opacity: 0, y: -20 }}
                 className="space-y-8"
               >
-                <div className="bg-indigo-600 rounded-3xl p-8 text-white relative overflow-hidden">
-                  <div className="relative z-10 max-w-lg">
-                    <h2 className="text-3xl font-bold mb-4">Start Your Learning Journey</h2>
-                    <p className="text-indigo-100 mb-6">
-                      Upload your curriculum and dataset to generate a personalized learning path tailored to your specific data.
+                <div className="bg-gradient-to-r from-indigo-600 to-violet-700 rounded-3xl p-10 text-white relative overflow-hidden shadow-2xl shadow-indigo-200">
+                  <div className="relative z-10 max-w-xl">
+                    <h2 className="text-4xl font-bold mb-4">Turn any Syllabus into a Course</h2>
+                    <p className="text-indigo-100 text-lg mb-8 leading-relaxed">
+                      Upload your curriculum or syllabus, and our AI will generate a structured, interactive learning path with modules, quizzes, and study guides.
                     </p>
+                    <div className="flex gap-4">
+                      <div className="flex items-center gap-2 text-sm bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
+                        <Sparkles size={16} /> AI-Powered
+                      </div>
+                      <div className="flex items-center gap-2 text-sm bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
+                        <BookOpen size={16} /> Any Subject
+                      </div>
+                    </div>
                   </div>
-                  <div className="absolute right-[-50px] bottom-[-50px] opacity-10">
-                    <GraduationCap size={300} />
+                  <div className="absolute right-[-20px] bottom-[-40px] opacity-10 rotate-12">
+                    <GraduationCap size={400} />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <FileUpload 
-                    type="curriculum" 
-                    onFileSelect={handleCurriculumUpload}
-                    fileName={curriculumName}
-                    isLoaded={!!curriculum}
+                    type="syllabus" 
+                    onFileSelect={handleSyllabusUpload}
+                    fileName={syllabusName}
+                    isLoaded={syllabus}
                   />
                   <FileUpload 
-                    type="dataset" 
-                    onFileSelect={handleDatasetUpload}
-                    fileName={datasetName}
-                    isLoaded={dataset.length > 0}
+                    type="materials" 
+                    onFileSelect={handleMaterialsUpload}
+                    fileName={materialsName}
+                    isLoaded={materials}
                   />
                 </div>
               </motion.div>
@@ -146,7 +143,7 @@ const Index = () => {
                 className="grid grid-cols-1 lg:grid-cols-3 gap-8"
               >
                 <div className="lg:col-span-1">
-                  <div className="bg-white rounded-2xl border border-slate-200 p-6 sticky top-32">
+                  <div className="bg-white rounded-2xl border border-slate-200 p-6 sticky top-32 shadow-sm">
                     <LearningPath 
                       lessons={lessons} 
                       onSelectLesson={handleLessonSelect}
@@ -156,30 +153,72 @@ const Index = () => {
                 </div>
 
                 <div className="lg:col-span-2 space-y-8">
-                  <div className="bg-white rounded-2xl border border-slate-200 p-8">
-                    <div className="flex items-center gap-3 mb-6">
-                      <span className="px-3 py-1 bg-indigo-100 text-indigo-600 text-xs font-bold rounded-full uppercase tracking-wider">
-                        Current Lesson
+                  <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
+                    <div className="flex items-center justify-between mb-6">
+                      <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-full uppercase tracking-widest border border-indigo-100">
+                        Module {currentLessonId}
                       </span>
+                      <div className="flex items-center gap-2 text-slate-400 text-sm">
+                        <BookOpen size={16} /> 15 min read
+                      </div>
                     </div>
-                    <h2 className="text-3xl font-bold text-slate-900 mb-4">
+                    
+                    <h2 className="text-3xl font-bold text-slate-900 mb-6">
                       {lessons.find(l => l.id === currentLessonId)?.title}
                     </h2>
+                    
                     <div className="prose prose-slate max-w-none">
-                      <p className="text-slate-600 leading-relaxed">
-                        In this lesson, we'll explore the fundamentals of your dataset: <strong>{datasetName}</strong>. 
-                        We'll look at the structure, identify key variables, and understand the story your data is trying to tell.
+                      <p className="text-slate-600 text-lg leading-relaxed mb-6">
+                        Welcome to the first module of your custom course based on <strong>{syllabusName}</strong>. 
+                        This section covers the foundational elements required to master the subject matter.
                       </p>
+                      
+                      <div className="bg-slate-50 rounded-xl p-6 border border-slate-100 mb-8">
+                        <h4 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
+                          <Sparkles size={18} className="text-indigo-500" /> Key Learning Objectives
+                        </h4>
+                        <ul className="space-y-2 text-slate-600">
+                          <li className="flex items-start gap-2">
+                            <ChevronRight size={18} className="text-indigo-400 mt-0.5 shrink-0" />
+                            Understand the core terminology and historical context.
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <ChevronRight size={18} className="text-indigo-400 mt-0.5 shrink-0" />
+                            Identify the primary frameworks used in this field.
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <ChevronRight size={18} className="text-indigo-400 mt-0.5 shrink-0" />
+                            Establish a baseline for advanced practical application.
+                          </li>
+                        </ul>
+                      </div>
                     </div>
-                    <div className="mt-8 flex gap-4">
-                      <Button className="bg-indigo-600 hover:bg-indigo-700 px-8">Start Lesson</Button>
-                      <Button variant="outline">Mark as Complete</Button>
+
+                    <div className="pt-8 border-t border-slate-100 flex flex-wrap gap-4">
+                      <Button className="bg-indigo-600 hover:bg-indigo-700 px-10 h-12 text-lg shadow-lg shadow-indigo-100">
+                        Start Learning
+                      </Button>
+                      <Button variant="outline" className="h-12 px-8">
+                        Download Study Guide
+                      </Button>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <h3 className="text-xl font-bold text-slate-900">Data Explorer</h3>
-                    <DataPreview data={dataset} columns={columns} />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-indigo-200 transition-colors cursor-pointer group">
+                      <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-orange-100 transition-colors">
+                        <Sparkles size={24} />
+                      </div>
+                      <h4 className="font-bold text-slate-900 mb-1">AI Quiz</h4>
+                      <p className="text-sm text-slate-500">Test your knowledge on this module.</p>
+                    </div>
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-indigo-200 transition-colors cursor-pointer group">
+                      <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
+                        <Library size={24} />
+                      </div>
+                      <h4 className="font-bold text-slate-900 mb-1">Resources</h4>
+                      <p className="text-sm text-slate-500">Access related papers and links.</p>
+                    </div>
                   </div>
                 </div>
               </motion.div>
