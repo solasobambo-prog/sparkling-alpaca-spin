@@ -12,7 +12,10 @@ import {
   ArrowLeft,
   PlayCircle,
   FileText,
-  BrainCircuit
+  BrainCircuit,
+  Wrench,
+  TrendingUp,
+  Lightbulb
 } from 'lucide-react';
 import FileUpload from '@/components/FileUpload';
 import LearningPath from '@/components/LearningPath';
@@ -78,7 +81,6 @@ const Index = () => {
 
   const handleStartLesson = () => {
     setIsGenerating(true);
-    // Simulate AI Researching and formulating content
     setTimeout(() => {
       setIsGenerating(false);
       setActiveView('lesson');
@@ -261,38 +263,87 @@ const Index = () => {
             <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-bottom-4 duration-500">
               <div className="bg-white rounded-3xl border border-slate-100 p-10 shadow-sm">
                 <div className="prose prose-slate max-w-none">
-                  <h2 className="text-3xl font-bold text-slate-900 mb-6">1.1 Understanding the Landscape</h2>
-                  <p className="text-lg text-slate-600 leading-relaxed mb-8">
-                    Based on your curriculum, we're starting with the core foundations. Data analysis isn't just about numbers; it's about the context surrounding those numbers. In your dataset <strong>{datasetFile?.name}</strong>, we've identified {columns.length} key dimensions that will form the basis of our study.
-                  </p>
+                  <h2 className="text-3xl font-bold text-slate-900 mb-6">1.1 What is Data Analysis?</h2>
                   
-                  <div className="bg-indigo-50 rounded-2xl p-8 border border-indigo-100 mb-8">
+                  <section className="mb-10">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
+                        <Lightbulb size={20} />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-900 m-0">The Definition</h3>
+                    </div>
+                    <p className="text-lg text-slate-600 leading-relaxed">
+                      Data analysis is the process of systematically applying statistical and logical techniques to describe and illustrate, condense and recap, and evaluate data. It's about turning raw information into actionable insights.
+                    </p>
+                  </section>
+
+                  <div className="bg-indigo-50 rounded-2xl p-8 border border-indigo-100 mb-10">
                     <h4 className="text-indigo-900 font-bold mb-4 flex items-center gap-2">
-                      <Sparkles size={20} /> AI Insight: Data Structure
+                      <Sparkles size={20} /> Practical Application: Your Dataset
                     </h4>
                     <p className="text-indigo-800 text-sm leading-relaxed">
-                      Your data contains {data.length} records. The primary key appears to be <strong>{columns[0]}</strong>. 
-                      We recommend focusing on the relationship between <strong>{columns[1]}</strong> and <strong>{columns[2]}</strong> as they show the highest variance in the initial scan.
+                      In your dataset <strong>{datasetFile?.name}</strong>, data analysis would involve examining the <strong>{columns.length}</strong> columns to find patterns. For example, analyzing the relationship between <strong>{columns[0]}</strong> and <strong>{columns[1]}</strong> could reveal trends that aren't visible at first glance.
                     </p>
                   </div>
 
-                  <h3 className="text-2xl font-bold text-slate-900 mb-4">Key Concepts</h3>
-                  <ul className="space-y-4">
-                    <li className="flex gap-4">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0 font-bold text-slate-600">1</div>
-                      <div>
-                        <h4 className="font-bold text-slate-900">Data Integrity</h4>
-                        <p className="text-slate-500">Ensuring the accuracy and consistency of data over its entire lifecycle.</p>
+                  <section className="mb-10">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                        <Wrench size={20} />
                       </div>
-                    </li>
-                    <li className="flex gap-4">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0 font-bold text-slate-600">2</div>
-                      <div>
-                        <h4 className="font-bold text-slate-900">Variable Identification</h4>
-                        <p className="text-slate-500">Distinguishing between independent and dependent variables in your specific dataset.</p>
+                      <h3 className="text-xl font-bold text-slate-900 m-0">Essential Tools</h3>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/50">
+                        <h4 className="font-bold text-slate-900 mb-1">Spreadsheets</h4>
+                        <p className="text-sm text-slate-500">Excel or Google Sheets for quick calculations and basic cleaning.</p>
                       </div>
-                    </li>
-                  </ul>
+                      <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/50">
+                        <h4 className="font-bold text-slate-900 mb-1">Programming</h4>
+                        <p className="text-sm text-slate-500">Python (Pandas) or R for complex statistical modeling and automation.</p>
+                      </div>
+                      <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/50">
+                        <h4 className="font-bold text-slate-900 mb-1">Visualization</h4>
+                        <p className="text-sm text-slate-500">Tableau or PowerBI to create interactive dashboards and reports.</p>
+                      </div>
+                      <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/50">
+                        <h4 className="font-bold text-slate-900 mb-1">SQL</h4>
+                        <p className="text-sm text-slate-500">The standard language for querying and managing relational databases.</p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="mb-10">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-amber-100 text-amber-600 rounded-lg">
+                        <TrendingUp size={20} />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-900 m-0">Business Benefits</h3>
+                    </div>
+                    <ul className="space-y-4 list-none p-0">
+                      <li className="flex gap-4">
+                        <div className="w-6 h-6 rounded-full bg-amber-50 flex items-center justify-center shrink-0 text-amber-600 font-bold text-xs">✓</div>
+                        <div>
+                          <h4 className="font-bold text-slate-900 m-0">Informed Decision Making</h4>
+                          <p className="text-slate-500 m-0">Reducing guesswork by basing strategies on historical data trends.</p>
+                        </div>
+                      </li>
+                      <li className="flex gap-4">
+                        <div className="w-6 h-6 rounded-full bg-amber-50 flex items-center justify-center shrink-0 text-amber-600 font-bold text-xs">✓</div>
+                        <div>
+                          <h4 className="font-bold text-slate-900 m-0">Operational Efficiency</h4>
+                          <p className="text-slate-500 m-0">Identifying bottlenecks in processes to save time and resources.</p>
+                        </div>
+                      </li>
+                      <li className="flex gap-4">
+                        <div className="w-6 h-6 rounded-full bg-amber-50 flex items-center justify-center shrink-0 text-amber-600 font-bold text-xs">✓</div>
+                        <div>
+                          <h4 className="font-bold text-slate-900 m-0">Customer Insights</h4>
+                          <p className="text-slate-500 m-0">Understanding behavior patterns to improve product-market fit.</p>
+                        </div>
+                      </li>
+                    </ul>
+                  </section>
                 </div>
 
                 <div className="mt-12 pt-8 border-t border-slate-100 flex justify-between items-center">
