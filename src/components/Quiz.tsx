@@ -4,50 +4,21 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, XCircle, ArrowRight, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-interface Question {
-  id: number;
-  text: string;
-  options: string[];
-  correctAnswer: number;
-}
+import { QuizQuestion } from '@/utils/aiGenerator';
 
 interface QuizProps {
   moduleTitle: string;
+  questions: QuizQuestion[];
   onClose: () => void;
+  onComplete: () => void;
 }
 
-const Quiz = ({ moduleTitle, onClose }: QuizProps) => {
+const Quiz = ({ moduleTitle, questions, onClose, onComplete }: QuizProps) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [showResults, setShowResults] = useState(false);
-
-  const questions: Question[] = [
-    {
-      id: 1,
-      text: "What is the primary objective of this foundational module?",
-      options: [
-        "To master advanced practical applications",
-        "To establish core terminology and context",
-        "To complete the final assessment",
-        "To skip to the next module"
-      ],
-      correctAnswer: 1
-    },
-    {
-      id: 2,
-      text: "Which framework is most commonly used for this subject matter?",
-      options: [
-        "The Linear Progression Model",
-        "The Iterative Feedback Loop",
-        "The Core Principles Framework",
-        "The Advanced Methodology Suite"
-      ],
-      correctAnswer: 2
-    }
-  ];
 
   const handleOptionSelect = (index: number) => {
     if (isSubmitted) return;
@@ -92,15 +63,25 @@ const Quiz = ({ moduleTitle, onClose }: QuizProps) => {
           <Button onClick={resetQuiz} variant="outline" className="gap-2">
             <RotateCcw size={18} /> Try Again
           </Button>
-          <Button onClick={onClose} className="bg-indigo-600 hover:bg-indigo-700">
-            Back to Module
+          <Button 
+            onClick={() => {
+              onComplete();
+              onClose();
+            }} 
+            className="bg-indigo-600 hover:bg-indigo-700"
+          >
+            Complete Module
           </Button>
         </div>
       </div>
     );
   }
 
-  const question = questions[currentQuestion];
+  const question = questions[currentQuestion] || {
+    text: "Loading question...",
+    options: [],
+    correctAnswer: 0
+  };
 
   return (
     <div className="space-y-8">

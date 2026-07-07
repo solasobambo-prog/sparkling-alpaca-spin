@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   GraduationCap, 
   LayoutDashboard, 
@@ -11,11 +11,11 @@ import {
   Sparkles,
   ArrowLeft,
   PlayCircle,
-  FileText,
   BrainCircuit,
   Wrench,
   TrendingUp,
-  Lightbulb
+  Lightbulb,
+  CheckCircle2
 } from 'lucide-react';
 import FileUpload from '@/components/FileUpload';
 import LearningPath from '@/components/LearningPath';
@@ -28,8 +28,21 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import { toast } from "sonner";
 import Papa from 'papaparse';
 import { cn } from '@/lib/utils';
+import { 
+  parseSyllabus, 
+  generateLessonContent, 
+  generateQuizQuestions, 
+  GeneratedLesson, 
+  QuizQuestion 
+} from '@/utils/aiGenerator';
 
 type ViewState = 'dashboard' | 'lesson' | 'quiz' | 'resources';
+
+interface LessonItem {
+  id: string;
+  title: string;
+  status: 'locked' | 'current' | 'completed';
+}
 
 const Index = () => {
   const [curriculumFile, setCurriculumFile] = useState<File | null>(null);
@@ -37,23 +50,19 @@ const Index = () => {
   const [data, setData] = useState<any[]>([]);
   const [columns, setColumns] = useState<string[]>([]);
   const [isReady, setIsReady] = useState(false);
+  const [lessons, setLessons] = useState<LessonItem[]>([]);
   const [currentLessonId, setCurrentLessonId] = useState("1");
   const [activeView, setActiveView] = useState<ViewState>('dashboard');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState("");
 
-  const lessons = [
-    { id: "1", title: "Introduction to Data Analysis", status: 'current' as const },
-    { id: "2", title: "Data Cleaning & Preprocessing", status: 'locked' as const },
-    { id: "3", title: "Exploratory Data Analysis (EDA)", status: 'locked' as const },
-    { id: "4", title: "Statistical Foundations", status: 'locked' as const },
-    { id: "5", title: "Advanced Visualization", status: 'locked' as const },
-  ];
-
-  const currentLesson = lessons.find(l => l.id === currentLessonId) || lessons[0];
+  // Dynamic content states
+  const [activeLessonContent, setActiveLessonContent] = useState<GeneratedLesson | null>(null);
+  const [activeQuizQuestions, setActiveQuizQuestions] = useState<QuizQuestion[]>([]);
 
   const handleCurriculumUpload = (file: File) => {
     setCurriculumFile(file);
-    toast.success("Curriculum uploaded!");
+    toast.success("Curriculum uploaded successfully!");
   };
 
   const handleDatasetUpload = (file: File) => {
@@ -65,27 +74,111 @@ const Index = () => {
         if (results.data && results.data.length > 0) {
           setData(results.data);
           setColumns(Object.keys(results.data[0]));
-          toast.success("Dataset processed!");
+          toast.success("Dataset processed successfully!");
         }
       }
     });
   };
 
   const startLearning = () => {
-    if (curriculumFile && datasetFile) {
-      setIsReady(true);
-    } else {
+    if (!curriculumFile || !datasetFile) {
       toast.error("Please upload both a curriculum and a dataset.");
+      return;
     }
+
+    setIsGenerating(true);
+    setGenerationStatus("Reading syllabus file...");
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      
+      setTimeout(() => {
+        setGenerationStatus("Parsing modules and topics...");
+        const parsedLessons = parseSyllabus(content, curriculumFile.name);
+        setLessons(parsedLessons);
+        setCurrentLessonId(parsedLessons[0]?.id || "1");
+      }, 800);
+
+      setTimeout(() => {
+        setGenerationStatus("Analyzing dataset structure and columns...");
+      }, 1600);
+
+      setTimeout(() => {
+        setGenerationStatus("Mapping syllabus to dataset variables...");
+      }, 2400);
+
+      setTimeout(() => {
+        setIsGenerating(false);
+        setIsReady(true);
+        toast.success("Course generated successfully!");
+      }, 3200);
+    };
+
+    reader.readAsText(curriculumFile);
   };
 
   const handleStartLesson = () => {
+    const currentLesson = lessons.find(l => l.id === currentLessonId);
+    if (!currentLesson) return;
+
     setIsGenerating(true);
+    setGenerationStatus(`Formulating lesson: "${currentLesson.title}"...`);
+
     setTimeout(() => {
+      setGenerationStatus("Injecting dataset context and variables...");
+    }, 1000);
+
+    setTimeout(() => {
+      // Generate custom lesson content and quiz questions
+      const content = generateLessonContent(currentLesson.title, datasetFile?.name || "Dataset", columns, data);
+      const quiz = generateQuizQuestions(currentLesson.title, columns);
+      
+      setActiveLessonContent(content);
+      setActiveQuizQuestions(quiz);
       setIsGenerating(false);
       setActiveView('lesson');
-    }, 2500);
+    }, 2000);
   };
+
+  const handleCompleteLesson = () => {
+    setLessons(prev => prev.map(lesson => {
+      if (lesson.id === currentLessonId) {
+        return { ...lesson, status: 'completed' };
+      }
+      // Unlock the next lesson
+      const nextId = String(Number(currentLessonId) + 1);
+      if (lesson.id === nextId && lesson.status === 'locked') {
+        return { ...lesson, status: 'current' };
+      }
+      return lesson;
+    }));
+    toast.success("Module marked as completed!");
+    setActiveView('dashboard');
+  };
+
+  const currentLesson = lessons.find(l => l.id === currentLessonId) || lessons[0];
+
+  // Calculate overall progress percentage
+  const completedCount = lessons.filter(l => l.status === 'completed').length;
+  const progressPercentage = lessons.length > 0 ? Math.round((completedCount / lessons.length) * 100) : 0;
+
+  if (isGenerating && !isReady) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-6">
+        <div className="max-w-md w-full text-center space-y-6 animate-in fade-in duration-500">
+          <div className="relative inline-block">
+            <div className="w-24 h-24 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin" />
+            <BrainCircuit className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-indigo-600" size={36} />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-2xl font-bold text-slate-900">Generating Your Course</h3>
+            <p className="text-slate-500 font-medium animate-pulse">{generationStatus}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!isReady) {
     return (
@@ -158,8 +251,8 @@ const Index = () => {
         </nav>
 
         <div className="pt-6 border-t border-slate-100">
-          <Button variant="ghost" className="w-full justify-start gap-3 text-slate-400 hover:text-red-500">
-            <LogOut size={20} /> Sign Out
+          <Button variant="ghost" className="w-full justify-start gap-3 text-slate-400 hover:text-red-500" onClick={() => setIsReady(false)}>
+            <LogOut size={20} /> Reset Course
           </Button>
         </div>
       </aside>
@@ -176,10 +269,10 @@ const Index = () => {
               )}
               <div>
                 <h1 className="text-2xl font-bold text-slate-900">
-                  {activeView === 'dashboard' ? "Welcome back, Analyst!" : currentLesson.title}
+                  {activeView === 'dashboard' ? "Welcome back, Analyst!" : currentLesson?.title}
                 </h1>
                 <p className="text-slate-500">
-                  {activeView === 'dashboard' ? "Ready to master your data today?" : "Module Progress: 45%"}
+                  {activeView === 'dashboard' ? "Ready to master your data today?" : `Module Progress: ${progressPercentage}%`}
                 </p>
               </div>
             </div>
@@ -187,9 +280,9 @@ const Index = () => {
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Overall Progress</p>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold text-slate-700">20%</span>
+                  <span className="text-sm font-bold text-slate-700">{progressPercentage}%</span>
                   <div className="w-24">
-                    <Progress value={20} className="h-1.5" />
+                    <Progress value={progressPercentage} className="h-1.5" />
                   </div>
                 </div>
               </div>
@@ -209,7 +302,7 @@ const Index = () => {
               </div>
               <div className="text-center">
                 <h3 className="text-xl font-bold text-slate-900">AI is formulating your lesson...</h3>
-                <p className="text-slate-500 mt-2">Searching knowledge base and aligning with {curriculumFile?.name}</p>
+                <p className="text-slate-500 mt-2">{generationStatus}</p>
               </div>
             </div>
           ) : activeView === 'dashboard' ? (
@@ -231,7 +324,7 @@ const Index = () => {
                       Current Lesson
                     </span>
                     <h2 className="text-3xl font-bold text-slate-900 mb-4">
-                      {currentLesson.title}
+                      {currentLesson?.title}
                     </h2>
                     <p className="text-slate-500 text-lg leading-relaxed mb-8">
                       In this lesson, we'll explore the fundamentals of your dataset: <span className="font-bold text-slate-700">{datasetFile?.name}</span>. 
@@ -244,9 +337,15 @@ const Index = () => {
                       >
                         <PlayCircle size={18} /> Start Lesson
                       </Button>
-                      <Button variant="outline" className="px-8 h-12 rounded-xl border-slate-200">
-                        Mark as Complete
-                      </Button>
+                      {currentLesson?.status !== 'completed' && (
+                        <Button 
+                          variant="outline" 
+                          className="px-8 h-12 rounded-xl border-slate-200"
+                          onClick={handleCompleteLesson}
+                        >
+                          Mark as Complete
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -259,11 +358,11 @@ const Index = () => {
                 </div>
               </div>
             </div>
-          ) : activeView === 'lesson' ? (
+          ) : activeView === 'lesson' && activeLessonContent ? (
             <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-bottom-4 duration-500">
               <div className="bg-white rounded-3xl border border-slate-100 p-10 shadow-sm">
                 <div className="prose prose-slate max-w-none">
-                  <h2 className="text-3xl font-bold text-slate-900 mb-6">1.1 What is Data Analysis?</h2>
+                  <h2 className="text-3xl font-bold text-slate-900 mb-6">{activeLessonContent.title}</h2>
                   
                   <section className="mb-10">
                     <div className="flex items-center gap-3 mb-4">
@@ -273,7 +372,19 @@ const Index = () => {
                       <h3 className="text-xl font-bold text-slate-900 m-0">The Definition</h3>
                     </div>
                     <p className="text-lg text-slate-600 leading-relaxed">
-                      Data analysis is the process of systematically applying statistical and logical techniques to describe and illustrate, condense and recap, and evaluate data. It's about turning raw information into actionable insights.
+                      {activeLessonContent.definition}
+                    </p>
+                  </section>
+
+                  <section className="mb-10">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
+                        <CheckCircle2 size={20} />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-900 m-0">What Does It Do?</h3>
+                    </div>
+                    <p className="text-lg text-slate-600 leading-relaxed">
+                      {activeLessonContent.utility}
                     </p>
                   </section>
 
@@ -282,7 +393,7 @@ const Index = () => {
                       <Sparkles size={20} /> Practical Application: Your Dataset
                     </h4>
                     <p className="text-indigo-800 text-sm leading-relaxed">
-                      In your dataset <strong>{datasetFile?.name}</strong>, data analysis would involve examining the <strong>{columns.length}</strong> columns to find patterns. For example, analyzing the relationship between <strong>{columns[0]}</strong> and <strong>{columns[1]}</strong> could reveal trends that aren't visible at first glance.
+                      {activeLessonContent.practicalApplication}
                     </p>
                   </div>
 
@@ -294,22 +405,12 @@ const Index = () => {
                       <h3 className="text-xl font-bold text-slate-900 m-0">Essential Tools</h3>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/50">
-                        <h4 className="font-bold text-slate-900 mb-1">Spreadsheets</h4>
-                        <p className="text-sm text-slate-500">Excel or Google Sheets for quick calculations and basic cleaning.</p>
-                      </div>
-                      <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/50">
-                        <h4 className="font-bold text-slate-900 mb-1">Programming</h4>
-                        <p className="text-sm text-slate-500">Python (Pandas) or R for complex statistical modeling and automation.</p>
-                      </div>
-                      <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/50">
-                        <h4 className="font-bold text-slate-900 mb-1">Visualization</h4>
-                        <p className="text-sm text-slate-500">Tableau or PowerBI to create interactive dashboards and reports.</p>
-                      </div>
-                      <div className="p-4 border border-slate-100 rounded-xl bg-slate-50/50">
-                        <h4 className="font-bold text-slate-900 mb-1">SQL</h4>
-                        <p className="text-sm text-slate-500">The standard language for querying and managing relational databases.</p>
-                      </div>
+                      {activeLessonContent.tools.map((tool, idx) => (
+                        <div key={idx} className="p-4 border border-slate-100 rounded-xl bg-slate-50/50">
+                          <h4 className="font-bold text-slate-900 mb-1">{tool.name}</h4>
+                          <p className="text-sm text-slate-500">{tool.description}</p>
+                        </div>
+                      ))}
                     </div>
                   </section>
 
@@ -321,27 +422,15 @@ const Index = () => {
                       <h3 className="text-xl font-bold text-slate-900 m-0">Business Benefits</h3>
                     </div>
                     <ul className="space-y-4 list-none p-0">
-                      <li className="flex gap-4">
-                        <div className="w-6 h-6 rounded-full bg-amber-50 flex items-center justify-center shrink-0 text-amber-600 font-bold text-xs">✓</div>
-                        <div>
-                          <h4 className="font-bold text-slate-900 m-0">Informed Decision Making</h4>
-                          <p className="text-slate-500 m-0">Reducing guesswork by basing strategies on historical data trends.</p>
-                        </div>
-                      </li>
-                      <li className="flex gap-4">
-                        <div className="w-6 h-6 rounded-full bg-amber-50 flex items-center justify-center shrink-0 text-amber-600 font-bold text-xs">✓</div>
-                        <div>
-                          <h4 className="font-bold text-slate-900 m-0">Operational Efficiency</h4>
-                          <p className="text-slate-500 m-0">Identifying bottlenecks in processes to save time and resources.</p>
-                        </div>
-                      </li>
-                      <li className="flex gap-4">
-                        <div className="w-6 h-6 rounded-full bg-amber-50 flex items-center justify-center shrink-0 text-amber-600 font-bold text-xs">✓</div>
-                        <div>
-                          <h4 className="font-bold text-slate-900 m-0">Customer Insights</h4>
-                          <p className="text-slate-500 m-0">Understanding behavior patterns to improve product-market fit.</p>
-                        </div>
-                      </li>
+                      {activeLessonContent.benefits.map((benefit, idx) => (
+                        <li key={idx} className="flex gap-4">
+                          <div className="w-6 h-6 rounded-full bg-amber-50 flex items-center justify-center shrink-0 text-amber-600 font-bold text-xs">✓</div>
+                          <div>
+                            <h4 className="font-bold text-slate-900 m-0">{benefit.title}</h4>
+                            <p className="text-slate-500 m-0">{benefit.description}</p>
+                          </div>
+                        </li>
+                      ))}
                     </ul>
                   </section>
                 </div>
@@ -359,7 +448,12 @@ const Index = () => {
             </div>
           ) : activeView === 'quiz' ? (
             <div className="max-w-3xl mx-auto bg-white rounded-3xl border border-slate-100 p-10 shadow-sm animate-in zoom-in-95 duration-300">
-              <Quiz moduleTitle={currentLesson.title} onClose={() => setActiveView('lesson')} />
+              <Quiz 
+                moduleTitle={currentLesson?.title} 
+                questions={activeQuizQuestions}
+                onClose={() => setActiveView('lesson')} 
+                onComplete={handleCompleteLesson}
+              />
             </div>
           ) : (
             <div className="max-w-4xl mx-auto animate-in fade-in duration-500">
